@@ -723,6 +723,15 @@ def _execute_code_generation(
             f"`{_md}` — use direction={'lower' if _md == 'minimize' else 'higher'} "
             f"in METRIC_DEF. You MUST NOT use the opposite direction."
         )
+        # Objective lock + data/scale protocol: generated code must implement the
+        # stated objective (no boundary-value / sensitivity drift) and support a
+        # pilot→full-scale data run, recording the scale each metric came from.
+        try:
+            extra_guidance += _pm.block("goal_adherence", topic=topic)
+            extra_guidance += _pm.block("dataset_scale_protocol")
+        except Exception:  # noqa: BLE001
+            pass
+
         _overlay = _get_evolution_overlay(run_dir, "code_generation")
         sp = _pm.for_stage(
             "code_generation",

@@ -123,6 +123,27 @@ artifacts/<run-id>/
 - **Sandbox execution failure**: Verify `experiment.sandbox.python_path` exists and has numpy installed
 - **Gate rejection**: Use `--auto-approve` or manually approve at stages 5, 9, 20
 
+## Guardrails (Goal Adherence & Data Scale)
+
+The pipeline enforces two standing constraints on every run, injected as prompt
+blocks (`goal_adherence`, `dataset_scale_protocol` in `researchclaw/prompts/shared.py`)
+at the hypothesis, experiment-design, code-generation, analysis, decision, and
+review stages:
+
+1. **Objective lock** — the original research goal must stay the *headline*
+   contribution of both the experiment and the paper. The run must NOT drift into
+   a methodological / boundary-value / parameter-sensitivity side-study as its main
+   result; such analyses are allowed only as explicitly-secondary ablations.
+2. **Pilot → full-scale data** — a small-batch *pilot* is allowed first to prove
+   feasibility, but once the approach works the experiment MUST scale up to the
+   full dataset/sample. Paper numbers must come from the full-scale run; the
+   `research_decision` stage forces REFINE (not PROCEED) on pilot-only evidence,
+   and `peer_review` flags pilot-only conclusions as a critical gap.
+
+These are prompt-level constraints (no pipeline control-flow changes). To tune the
+wording, edit the two blocks in `shared.py`, or override them via a custom prompts
+YAML pointed to by `prompts.custom_file` in `config.yaml`.
+
 ## Tools Required
 
 - File read/write (for config and artifacts)

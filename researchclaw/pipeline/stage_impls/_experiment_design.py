@@ -197,6 +197,17 @@ def _execute_experiment_design(
         _per_condition_sec = int(config.experiment.time_budget_sec * 0.7 / 6)
         _tier1 = "CIFAR-10, CIFAR-100, MNIST, FashionMNIST, STL-10, SVHN"
 
+        # Objective lock + data/scale protocol: keep the plan anchored to the
+        # stated goal (no boundary-value / sensitivity drift) and require an
+        # explicit pilot→full-scale data design.
+        try:
+            preamble = preamble + "\n\n" + _pm.block(
+                "goal_adherence", topic=config.research.topic
+            )
+            _dg_block += "\n\n" + _pm.block("dataset_scale_protocol")
+        except Exception:  # noqa: BLE001
+            pass
+
         _overlay = _get_evolution_overlay(run_dir, "experiment_design")
         sp = _pm.for_stage(
             "experiment_design",

@@ -601,6 +601,16 @@ def _execute_result_analysis(
         # stays in the same vocabulary as the rest of the pipeline.
         _analysis_roles = _pm.debate_roles_analysis()
 
+        # Objective lock + data-scale reminder for the analysis debate: stay on
+        # the stated objective and note which data scale each metric came from.
+        try:
+            preamble = preamble + "\n\n" + _pm.block(
+                "goal_adherence", topic=config.research.topic
+            )
+            data_context = data_context + "\n\n" + _pm.block("dataset_scale_protocol")
+        except Exception:  # noqa: BLE001
+            pass
+
         # --- Multi-perspective debate ---
         perspectives_dir = stage_dir / "perspectives"
         variables = {
@@ -1248,7 +1258,31 @@ def _execute_research_decision(
         _pm = prompts or PromptManager()
         _overlay = _get_evolution_overlay(run_dir, "research_decision")
         sp = _pm.for_stage("research_decision", evolution_overlay=_overlay, analysis=analysis)
-        _user = sp.user + _degenerate_hint + _diagnosis_hint + _ablation_refine_hint
+        # Objective + data-scale gate: drift away from the goal, or evidence drawn
+        # only from a pilot/small-batch run, must block PROCEED (issue: experiments
+        # drifting into boundary-value studies and papers written on pilot data).
+        try:
+            _scale_goal_gate_hint = (
+                "\n\n## OBJECTIVE & DATA-SCALE GATE (decisive for PROCEED/PIVOT/REFINE)\n"
+                + _pm.block("goal_adherence", topic=config.research.topic)
+                + _pm.block("dataset_scale_protocol")
+                + "\nDECISION RULES derived from the two constraints above:\n"
+                "- If the experiment drifted from the stated objective (e.g. it became a "
+                "boundary-value / parameter-sensitivity / methodological side-study instead "
+                "of testing the objective), you MUST choose PIVOT or REFINE to return to the "
+                "objective — do NOT PROCEED.\n"
+                "- If the reported metrics come only from a PILOT / small-batch / subset run "
+                "(not the full dataset/sample), you MUST choose REFINE to scale up to full "
+                "data BEFORE writing the paper — do NOT PROCEED on pilot-only evidence.\n"
+                "- Choose PROCEED only when the objective is the headline finding AND the "
+                "evidence comes from a full-scale run.\n"
+            )
+        except Exception:  # noqa: BLE001
+            _scale_goal_gate_hint = ""
+        _user = (
+            sp.user + _degenerate_hint + _diagnosis_hint + _ablation_refine_hint
+            + _scale_goal_gate_hint
+        )
         resp = _chat_with_prompt(llm, sp.system, _user)
         decision_md = resp.content
     else:

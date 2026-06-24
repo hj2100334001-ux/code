@@ -109,7 +109,16 @@ def _execute_hypothesis_gen(
 
         # --- Multi-perspective debate ---
         perspectives_dir = stage_dir / "perspectives"
-        variables = {"topic": config.research.topic, "synthesis": synthesis}
+        # Objective lock: every debate perspective must serve the stated research
+        # goal, not drift into a methodological / boundary-value side-study.
+        try:
+            _goal_lock = _pm.block("goal_adherence", topic=config.research.topic)
+        except Exception:  # noqa: BLE001
+            _goal_lock = ""
+        variables = {
+            "topic": config.research.topic,
+            "synthesis": synthesis + (f"\n\n{_goal_lock}" if _goal_lock else ""),
+        }
         perspectives = _multi_perspective_generate(
             llm, _active_roles, variables, perspectives_dir
         )

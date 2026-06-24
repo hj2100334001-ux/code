@@ -158,7 +158,63 @@ _DEFAULT_BLOCKS: dict[str, str] = {
         "- The Method section MUST describe a technical approach, not a workflow.\n"
         "- The Results section MUST report quantitative outcomes of experiments, "
         "not environment status.\n"
+        "- The paper's central contribution MUST be the stated objective, NOT a "
+        "methodological/boundary/sensitivity side-study (those may appear ONLY as "
+        "clearly-secondary ablations).\n"
+        "- Results MUST come from the FULL-scale experiment. Do NOT draw conclusions "
+        "from pilot/small-batch data only; if scale was limited, state it explicitly "
+        "rather than presenting pilot numbers as final.\n"
         "=== END CONSTRAINT ===\n"
+    ),
+    # Objective lock — keeps the experiment/paper anchored to the stated research
+    # goal and prevents drift into a methodological / boundary-value side-study.
+    # Injected at hypothesis_gen, experiment_design, code_generation,
+    # result_analysis, and research_decision. Variable: {topic}.
+    "goal_adherence": (
+        "\n## OBJECTIVE LOCK (Hard Constraint — read this first)\n"
+        "The research objective derived from the topic is the ONLY deliverable of this work:\n"
+        "  OBJECTIVE (from topic): {topic}\n"
+        "- This primary objective MUST remain the HEADLINE contribution of BOTH the "
+        "experiment and the paper.\n"
+        "- Do NOT substitute a methodological side-study for the real objective. "
+        "Boundary-value analysis, parameter-sensitivity sweeps, hyperparameter scans, or "
+        "\"we characterize the behavior of X\" studies are NOT acceptable as the main "
+        "contribution.\n"
+        "- Such analyses are allowed ONLY as explicitly-secondary ablations that directly "
+        "support the primary objective — never as the paper's central claim, title, or "
+        "headline result.\n"
+        "- Every hypothesis, experimental condition, metric, and results section MUST map "
+        "back to the objective. If a condition does not test the objective, drop it.\n"
+        "- Litmus test: if a reader asks \"what did this work set out to do?\", the answer "
+        "MUST be the objective above — NOT \"it analyzed the sensitivity/boundaries of a "
+        "method\".\n"
+    ),
+    # Data selection + pilot->full scaling. Allows a small-batch pilot to prove
+    # feasibility, then REQUIRES a full-scale run before any conclusion/paper claim.
+    # Injected at experiment_design, code_generation, result_analysis,
+    # research_decision. No variables.
+    "dataset_scale_protocol": (
+        "\n## DATA & SCALE PROTOCOL (Hard Constraint)\n"
+        "DATA SELECTION:\n"
+        "- Identify and NAME a concrete, appropriate dataset / benchmark / sample for the "
+        "objective (a real standard benchmark when one exists; otherwise a clearly-specified "
+        "generated/collected sample).\n"
+        "TWO PHASES (mandatory):\n"
+        "- Phase 1 PILOT: a small subset / small batch is allowed FIRST, ONLY to verify the "
+        "approach runs end-to-end and is feasible (no crashes, sane metrics, fits the time "
+        "budget).\n"
+        "- Phase 2 FULL: once feasibility is confirmed, you MUST scale up to the FULL dataset "
+        "/ full sample (or the largest scale the compute budget allows) BEFORE drawing any "
+        "conclusion.\n"
+        "HARD RULES:\n"
+        "- Numbers reported in the paper MUST come from the FULL-scale run, NOT from the "
+        "pilot/small-batch.\n"
+        "- A pilot/small-batch result is NEVER sufficient evidence for a conclusion or a "
+        "paper claim.\n"
+        "- For every reported metric, RECORD the data scale it came from (dataset name, "
+        "split, number of samples/events).\n"
+        "- If full scale does not fit the budget, scale UP as far as the budget allows and "
+        "STATE the actual scale used — never silently fall back to pilot numbers.\n"
     ),
     "pkg_hint_sandbox": (
         "\nAVAILABLE PACKAGES (sandbox mode): Python stdlib, numpy, math, random, "

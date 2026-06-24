@@ -178,7 +178,21 @@ def _execute_peer_review(
         # prompt bank (ML bank -> NeurIPS/ICML referees, HEP bank -> HEP
         # theorist/phenomenologist/experimentalist). No adapter overlay.
         _review_system = sp.system
-        _review_user = sp.user + _quality_suffix
+        # Mandatory guardrail checks: reviewers must catch (a) drift where a
+        # methodological/boundary side-study replaced the stated objective, and
+        # (b) conclusions drawn from pilot/small-batch data instead of full scale.
+        _guardrail_review_suffix = (
+            "\n\nADDITIONAL MANDATORY REVIEW CHECKS (flag explicitly as weaknesses if violated):\n"
+            "1. OBJECTIVE DRIFT: Does the paper's central contribution match its stated "
+            "objective? If a methodological / boundary-value / parameter-sensitivity "
+            "side-study has replaced the stated objective as the headline contribution, "
+            "flag this as a CRITICAL drift that MUST be fixed.\n"
+            "2. DATA SCALE: Are the reported results based on the FULL dataset/sample, or only "
+            "on a pilot / small-batch / subset? If conclusions rest on pilot-only data without "
+            "a full-scale run, flag this as a CRITICAL evidence gap — pilot results are NOT "
+            "sufficient for publication claims.\n"
+        )
+        _review_user = sp.user + _quality_suffix + _guardrail_review_suffix
         resp = _chat_with_prompt(
             llm,
             _review_system,

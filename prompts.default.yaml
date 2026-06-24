@@ -33,6 +33,29 @@ blocks:
     - MANDATORY: implement a time guard — check elapsed time periodically and
       stop gracefully if approaching 80% of budget, saving all results collected so far
 
+  goal_adherence: |
+    ## OBJECTIVE LOCK (Hard Constraint — read this first)
+    The research objective derived from the topic is the ONLY deliverable of this work:
+      OBJECTIVE (from topic): {topic}
+    - This primary objective MUST remain the HEADLINE contribution of BOTH the experiment and the paper.
+    - Do NOT substitute a methodological side-study for the real objective. Boundary-value analysis, parameter-sensitivity sweeps, hyperparameter scans, or "we characterize the behavior of X" studies are NOT acceptable as the main contribution.
+    - Such analyses are allowed ONLY as explicitly-secondary ablations that directly support the primary objective — never as the paper's central claim, title, or headline result.
+    - Every hypothesis, experimental condition, metric, and results section MUST map back to the objective. If a condition does not test the objective, drop it.
+    - Litmus test: if a reader asks "what did this work set out to do?", the answer MUST be the objective above — NOT "it analyzed the sensitivity/boundaries of a method".
+
+  dataset_scale_protocol: |
+    ## DATA & SCALE PROTOCOL (Hard Constraint)
+    DATA SELECTION:
+    - Identify and NAME a concrete, appropriate dataset / benchmark / sample for the objective (a real standard benchmark when one exists; otherwise a clearly-specified generated/collected sample).
+    TWO PHASES (mandatory):
+    - Phase 1 PILOT: a small subset / small batch is allowed FIRST, ONLY to verify the approach runs end-to-end and is feasible (no crashes, sane metrics, fits the time budget).
+    - Phase 2 FULL: once feasibility is confirmed, you MUST scale up to the FULL dataset / full sample (or the largest scale the compute budget allows) BEFORE drawing any conclusion.
+    HARD RULES:
+    - Numbers reported in the paper MUST come from the FULL-scale run, NOT from the pilot/small-batch.
+    - A pilot/small-batch result is NEVER sufficient evidence for a conclusion or a paper claim.
+    - For every reported metric, RECORD the data scale it came from (dataset name, split, number of samples/events).
+    - If full scale does not fit the budget, scale UP as far as the budget allows and STATE the actual scale used — never silently fall back to pilot numbers.
+
   pkg_hint_sandbox: '
 
     AVAILABLE PACKAGES (sandbox mode): Python stdlib, numpy, math, random, statistics, json.
@@ -64,6 +87,10 @@ blocks:
     - The Method section MUST describe a technical approach, not a workflow.
 
     - The Results section MUST report quantitative outcomes of experiments, not environment status.
+
+    - The paper''s central contribution MUST be the stated objective, NOT a methodological/boundary/sensitivity side-study (those may appear ONLY as clearly-secondary ablations).
+
+    - Results MUST come from the FULL-scale experiment. Do NOT draw conclusions from pilot/small-batch data only; if scale was limited, state it explicitly rather than presenting pilot numbers as final.
 
     === END CONSTRAINT ===
 
